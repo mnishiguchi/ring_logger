@@ -65,6 +65,11 @@ defmodule RingLogger.Server do
     GenServer.call(__MODULE__, {:tail, n})
   end
 
+  @spec clear() :: :ok
+  def clear() do
+    GenServer.call(__MODULE__, :clear)
+  end
+
   @impl GenServer
   def init(opts) do
     max_size = Keyword.get(opts, :max_size, @default_max_size)
@@ -73,6 +78,12 @@ defmodule RingLogger.Server do
   end
 
   @impl GenServer
+  def handle_call(:clear, _from, state) do
+    max_size = state.cb.max_size
+
+    {:reply, :ok, %{state | cb: CircularBuffer.new(max_size)}}
+  end
+
   def handle_call(:config, _from, state) do
     config = %{max_size: state.cb.max_size}
 
